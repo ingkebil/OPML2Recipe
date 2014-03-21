@@ -1,7 +1,7 @@
-OMPL2Recipe
+OPML2Recipe
 ===========
 
-Plugin for Calibre: imports an OMPL file as a news recipe.
+Plugin for Calibre: imports an OPML file as a news recipe.
 
 ... coming soon :)
 
