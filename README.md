@@ -25,7 +25,8 @@ A restart is still required once the RSS feeds have been imported!
 Installation Notes
 ------------------
 
-Download the attached zip file, install the plugin and restart calibre as described in the Introduction to plugins thread.
+Download the zip file, unpack it and zip only the contents of the OPML2Recipe directory. Install the plugin: preferences -> plugins -> load from file. Selet the newly created zip file.
+Restart calibre.
 Customize the plugin via Preferences -> Plugins or through the configure button of the plugin.
 
 Usage
