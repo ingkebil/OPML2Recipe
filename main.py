@@ -21,6 +21,46 @@ from PyQt4.Qt import (QDialog, QGridLayout, QPushButton, QMessageBox, QLabel,
 
 from calibre_plugins.opml.config import prefs
 
+# http://docs.python.org/2/library/xml.etree.elementtree.html
+import xml.etree.ElementTree as ET
+from calibre.web.feeds.recipes import compile_recipe
+from calibre.gui2 import error_dialog, choose_files
+from calibre.web.feeds.recipes.collection import add_custom_recipe
+
+class OldestArticle(QWidget):
+
+    def __init__(self, parent):
+        QWidget.__init__(self, parent)
+        self.ll = ll = QGridLayout()
+        self.setLayout(self.ll)
+
+        self.labell = QLabel('Oldest article:')
+        ll.addWidget(self.labell, 0, 0, 1, 1)
+        self.oldest_article_edit = QLineEdit(self)
+        self.oldest_article_edit.setPlaceholderText('7')
+        ll.addWidget(self.oldest_article_edit, 0, 1, 1, 1)
+        
+    @property
+    def oldest_article(self):
+        return int(self.oldest_article_edit.text())       
+
+class MaxArticles(QWidget):
+
+    def __init__(self, parent):
+        QWidget.__init__(self, parent)
+        self.ll = ll = QGridLayout()
+        self.setLayout(self.ll)
+
+        self.labell = QLabel('Max articles:')
+        ll.addWidget(self.labell, 0, 0, 1, 1)
+        self.max_articles_edit = QLineEdit(self)
+        self.max_articles_edit.setPlaceholderText('100')
+        ll.addWidget(self.max_articles_edit, 0, 1, 1, 1)
+        
+    @property
+    def max_articles(self):
+        return int(self.max_articles_edit.text())       
+
 class Path(QWidget):
 
     def __init__(self, parent):
@@ -54,11 +94,14 @@ class DemoDialog(QDialog):
         self.l = QVBoxLayout()
         self.setLayout(self.l)
 
-        self.label = QLabel(prefs['hello_world_msg'])
-        self.l.addWidget(self.label)
-
         self.setWindowTitle('OPML Importer')
         self.setWindowIcon(icon)
+
+        self.oldest_article = oldest_article = OldestArticle(self)
+        self.l.addWidget(self.oldest_article)
+
+        self.max_articles = max_articles = MaxArticles(self)
+        self.l.addWidget(self.max_articles)
 
         self.import_button = QPushButton('Import', self)
         self.import_button.clicked.connect(self.import_opml)
@@ -72,10 +115,19 @@ class DemoDialog(QDialog):
         self.resize(self.sizeHint())
 
     def import_opml(self):
+        opml_files = choose_files(self, 'OPML chooser dialog dir',
+                _('Select OPML file'), filters=[(_('OPML'), ['opml'])] )
+
+        print(opml_files)
+
+        if not opml_files:
+            return
+        
         opml = OPML();
-        opml.load('/media/sf_Kenny/Downloads/feedly.opml')
-        outlines = opml.parse()
-        opml.import_recipes(outlines)
+        for opml_file in opml_files:
+            opml.load(opml_file)
+            outlines = opml.parse()
+            opml.import_recipes(outlines)
 
     def config(self):
         self.do_user_config(parent=self)
@@ -83,11 +135,6 @@ class DemoDialog(QDialog):
         self.label.setText(prefs['hello_world_msg'])
 
 
-# http://docs.python.org/2/library/xml.etree.elementtree.html
-import xml.etree.ElementTree as ET
-from calibre.web.feeds.recipes import compile_recipe
-from calibre.gui2 import error_dialog
-from calibre.web.feeds.recipes.collection import add_custom_recipe
 #from calibre.web.feeds.news import AutomaticNewsRecipe
 
 class OPML(object):
