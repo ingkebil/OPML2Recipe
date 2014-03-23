@@ -19,7 +19,8 @@ from calibre.utils.config import JSONConfig
 prefs = JSONConfig('plugins/opml')
 
 # Set defaults
-prefs.defaults['hello_world_msg'] = 'Hello, World!'
+prefs.defaults['oldest_article'] = '7'
+prefs.defaults['max_articles'] = '100'
 
 class ConfigWidget(QWidget):
 
@@ -28,14 +29,23 @@ class ConfigWidget(QWidget):
         self.l = QHBoxLayout()
         self.setLayout(self.l)
 
-        self.label = QLabel('Hello world &message:')
-        self.l.addWidget(self.label)
+        self.oldest_articlel = QLabel('Oldest article:')
+        self.l.addWidget(self.oldest_articlel)
 
-        self.msg = QLineEdit(self)
-        self.msg.setText(prefs['hello_world_msg'])
-        self.l.addWidget(self.msg)
-        self.label.setBuddy(self.msg)
+        self.oldest_article_msg = QLineEdit(self)
+        self.oldest_article_msg.setText(prefs['oldest_article'])
+        self.l.addWidget(self.oldest_article_msg)
+        self.oldest_articlel.setBuddy(self.oldest_article_msg)
+
+        self.max_articlesl = QLabel('Max articles:')
+        self.l.addWidget(self.max_articlesl)
+
+        self.max_articles_msg = QLineEdit(self)
+        self.max_articles_msg.setText(prefs['max_articles'])
+        self.l.addWidget(self.max_articles_msg)
+        self.max_articlesl.setBuddy(self.max_articles_msg)
 
     def save_settings(self):
-        prefs['hello_world_msg'] = unicode(self.msg.text())
+        prefs['oldest_article'] = unicode(self.oldest_article_msg.text())
+        prefs['max_articles'] = unicode(self.max_articles_msg.text())
 

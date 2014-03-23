@@ -15,9 +15,8 @@ if False:
 
 import time
 
-from PyQt4.Qt import (QDialog, QGridLayout, QPushButton, QMessageBox, QLabel,
-        QWidget, QVBoxLayout, QLineEdit, QIcon, QDialogButtonBox, QTimer,
-        QScrollArea, QSize)
+from PyQt4.Qt import (QDialog, QGridLayout, QPushButton, QLabel,
+        QWidget, QVBoxLayout, QLineEdit)
 
 from calibre_plugins.opml.config import prefs
 
@@ -37,12 +36,12 @@ class OldestArticle(QWidget):
         self.labell = QLabel('Oldest article:')
         ll.addWidget(self.labell, 0, 0, 1, 1)
         self.oldest_article_edit = QLineEdit(self)
-        self.oldest_article_edit.setPlaceholderText('7')
+        self.oldest_article_edit.setPlaceholderText(prefs['oldest_article'])
         ll.addWidget(self.oldest_article_edit, 0, 1, 1, 1)
         
     @property
     def oldest_article(self):
-        return int(self.oldest_article_edit.text())       
+        return int(self.oldest_article_edit.text() or prefs['oldest_article'])       
 
 class MaxArticles(QWidget):
 
@@ -54,29 +53,12 @@ class MaxArticles(QWidget):
         self.labell = QLabel('Max articles:')
         ll.addWidget(self.labell, 0, 0, 1, 1)
         self.max_articles_edit = QLineEdit(self)
-        self.max_articles_edit.setPlaceholderText('100')
+        self.max_articles_edit.setPlaceholderText(prefs['max_articles'])
         ll.addWidget(self.max_articles_edit, 0, 1, 1, 1)
         
     @property
     def max_articles(self):
-        return int(self.max_articles_edit.text())       
-
-class Path(QWidget):
-
-    def __init__(self, parent):
-        QWidget.__init__(self, parent)
-        self.ll = ll = QGridLayout()
-        self.setLayout(self.ll)
-
-        self.labell = QLabel('Title:')
-        ll.addWidget(self.labell, 0, 0, 1, 1)
-        self.title_edit = QLineEdit(self)
-        self.title_edit.setPlaceholderText('Enter path to OPML')
-        ll.addWidget(self.title_edit, 0, 1, 1, 1)
-
-    @property
-    def title(self):
-        return unicode(self.title_edit.text())
+        return int(self.max_articles_edit.text() or prefs['max_articles'])       
 
 class DemoDialog(QDialog):
 
@@ -114,6 +96,12 @@ class DemoDialog(QDialog):
 
         self.resize(self.sizeHint())
 
+    def config(self):
+         self.do_user_config(parent=self)
+         # Apply the changes
+         self.oldest_article.oldest_article_edit.setPlaceholderText(prefs['oldest_article'])
+         self.max_articles.max_articles_edit.setPlaceholderText(prefs['max_articles'])
+
     def import_opml(self):
         opml_files = choose_files(self, 'OPML chooser dialog dir',
                 _('Select OPML file'), filters=[(_('OPML'), ['opml'])] )
@@ -123,27 +111,19 @@ class DemoDialog(QDialog):
         if not opml_files:
             return
         
-        opml = OPML();
+        opml = OPML(self.oldest_article.oldest_article, self.max_articles.max_articles);
         for opml_file in opml_files:
             opml.load(opml_file)
             outlines = opml.parse()
             opml.import_recipes(outlines)
 
-    def config(self):
-        self.do_user_config(parent=self)
-        # Apply the changes
-        self.label.setText(prefs['hello_world_msg'])
-
-
-#from calibre.web.feeds.news import AutomaticNewsRecipe
-
 class OPML(object):
 
-    def __init__(self):
+    def __init__(self, oldest_article = 7, max_articles = 100):
         self.doc = None # xml document
         self.outlines = None # parsed outline objects
-        self.oldest_article = 7
-        self.max_articles = 100
+        self.oldest_article = oldest_article
+        self.max_articles = max_articles
 
     def load(self, filename):
         tree = ET.parse(filename)
@@ -177,6 +157,8 @@ class OPML(object):
                 compile_recipe(src)
                 add_custom_recipe(title, src)
             except Exception as err:
+                # error dialog should be placed somewhere where it can have a parent
+                # Left it here as this way failing feeds only will silently fail
                 error_dialog(None, _('Invalid input'),
                     _('<p>Could not create recipe. Error:<br>%s')%str(err)).exec_()
             nr+=1
