@@ -85,8 +85,10 @@ class DemoDialog(QDialog):
 
 # http://docs.python.org/2/library/xml.etree.elementtree.html
 import xml.etree.ElementTree as ET
-from calibre.web.feeds.recipes import compile_recipe, custom_recipes
+from calibre.web.feeds.recipes import compile_recipe
 from calibre.gui2 import error_dialog
+from calibre.web.feeds.recipes.collection import add_custom_recipe
+#from calibre.web.feeds.news import AutomaticNewsRecipe
 
 class OPML(object):
 
@@ -104,8 +106,8 @@ class OPML(object):
         self.outlines = self.doc.findall(u"body/outline")
 
         for outline in self.outlines: # check for groups
-            if ('type' not in outline.attrib):
-                feeds = [] # title, xmlUrl
+            #if ('type' not in outline.attrib):
+                feeds = [] # title, url
                 for feed in outline.iter('outline'):
                     if 'type' in feed.attrib:
                         feeds.append( (feed.get('title'), feed.get('xmlUrl')) )
@@ -114,32 +116,32 @@ class OPML(object):
         return self.outlines
 
     def import_recipes(self, outlines):
+        nr = 0
         for outline in outlines:
             src, title = self.options_to_profile(dict(
-                title=repr(outline.get('title')),
-                feeds=repr(outline.get('xmlUrl')),
+                nr=nr,
+                title=unicode(outline.get('title')),
+                feeds=outline.get('xmlUrl'),
                 oldest_article=self.oldest_article,
                 max_articles=self.max_articles,
                 base_class='AutomaticNewsRecipe'
             ))
             try:
                 compile_recipe(src)
-                error_dialog(None, 'Works', src).exec_()
+                add_custom_recipe(title, src)
             except Exception as err:
                 error_dialog(None, _('Invalid input'),
                     _('<p>Could not create recipe. Error:<br>%s')%str(err)).exec_()
+            nr+=1
 
     def options_to_profile(self, recipe):
-        classname = 'BasicUserRecipe'+str(int(time.time()))
+        classname = 'BasicUserRecipe'+str(recipe.get('nr'))+str(int(time.time()))
         title = recipe.get('title').strip()
         if not title:
             title = classname
         oldest_article = self.oldest_article
         max_articles   = self.max_articles
-        if not isinstance(recipe.get('feeds'), str):
-            feeds = [i.user_data for i in recipe.get('feeds').items()]
-        else:
-            feeds = recipe.get('feeds')
+        feeds = recipe.get('feeds')
 
         src = '''\
 class %(classname)s(%(base_class)s):
