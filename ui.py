@@ -4,7 +4,7 @@ from __future__ import (unicode_literals, division, absolute_import,
                         print_function)
 
 __license__   = 'GPL v3'
-__copyright__ = '2011, Kovid Goyal <kovid@kovidgoyal.net>'
+__copyright__ = '2014, Kenny Billiau <kennybilliau@gmail.com>'
 __docformat__ = 'restructuredtext en'
 
 if False:
@@ -15,9 +15,9 @@ if False:
 
 # The class that all interface action plugins must inherit from
 from calibre.gui2.actions import InterfaceAction
-from calibre_plugins.opml.main import DemoDialog
+from calibre_plugins.opml.main import OPMLDialog
 
-class OPML(InterfaceAction):
+class InterfacePlugin(InterfaceAction):
 
     name = 'OPML Importer'
 
@@ -60,7 +60,7 @@ class OPML(InterfaceAction):
         # self.gui is the main calibre GUI. It acts as the gateway to access
         # all the elements of the calibre user interface, it should also be the
         # parent of the dialog
-        d = DemoDialog(self.gui, self.qaction.icon(), do_user_config)
+        d = OPMLDialog(self.gui, self.qaction.icon(), do_user_config)
         d.show()
 
     def apply_settings(self):

@@ -25,6 +25,7 @@ import xml.etree.ElementTree as ET
 from calibre.web.feeds.recipes import compile_recipe
 from calibre.gui2 import error_dialog, choose_files
 from calibre.web.feeds.recipes.collection import add_custom_recipe
+from calibre.gui2.dialogs.message_box import MessageBox
 
 class OldestArticle(QWidget):
 
@@ -60,7 +61,7 @@ class MaxArticles(QWidget):
     def max_articles(self):
         return int(self.max_articles_edit.text() or prefs['max_articles'])       
 
-class DemoDialog(QDialog):
+class OPMLDialog(QDialog):
 
     def __init__(self, gui, icon, do_user_config):
         QDialog.__init__(self, gui)
@@ -103,10 +104,8 @@ class DemoDialog(QDialog):
          self.max_articles.max_articles_edit.setPlaceholderText(prefs['max_articles'])
 
     def import_opml(self):
-        opml_files = choose_files(self, 'OPML chooser dialog dir',
+        opml_files = choose_files(self, 'OPML chooser dialog',
                 _('Select OPML file'), filters=[(_('OPML'), ['opml'])] )
-
-        print(opml_files)
 
         if not opml_files:
             return
@@ -116,6 +115,11 @@ class DemoDialog(QDialog):
             opml.load(opml_file)
             outlines = opml.parse()
             opml.import_recipes(outlines)
+
+        # show a messagebox statingthat import finished
+        msg_box = MessageBox(MessageBox.INFO, "Finished", "OPML to Recipe conversion complete", parent=self,
+                    show_copy_button=False)
+        msg_box.exec_()
 
 class OPML(object):
 
