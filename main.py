@@ -159,7 +159,7 @@ class OPML(object):
 
     def import_recipes(self, outlines):
         nr = 0
-        recipe_model = CustomRecipeModel(RecipeModel())
+        #recipe_model = CustomRecipeModel(RecipeModel())
         for outline in outlines:
             src, title = self.options_to_profile(dict(
                 nr=nr,
@@ -179,7 +179,7 @@ class OPML(object):
                     _('<p>Could not create recipe. Error:<br>%s')%str(err)).exec_()
             nr+=1
 
-            recipe_model.add(title, src)
+            #recipe_model.add(title, src)
 
 
     def options_to_profile(self, recipe):
