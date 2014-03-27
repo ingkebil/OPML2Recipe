@@ -14,6 +14,7 @@ So far a restart is required to have the imported RSS feeds show up in custom ne
 
 Version History
 ---------------
+* Version 1.0.1: MessageBox appears on succesful completion.
 * Version 1.0.0: Created a working import plugin + configuration of oldest article and max articles.
 
 Special Notes
