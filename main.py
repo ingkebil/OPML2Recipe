@@ -16,7 +16,7 @@ if False:
 import time
 
 from PyQt4.Qt import (QDialog, QGridLayout, QPushButton, QLabel,
-        QWidget, QVBoxLayout, QLineEdit)
+        QWidget, QVBoxLayout, QLineEdit, QAbstractListModel)
 
 from calibre_plugins.opml.config import prefs
 
@@ -26,6 +26,17 @@ from calibre.web.feeds.recipes import compile_recipe
 from calibre.gui2 import error_dialog, choose_files
 from calibre.web.feeds.recipes.collection import add_custom_recipe
 from calibre.gui2.dialogs.message_box import MessageBox
+from calibre.web.feeds.recipes.model import RecipeModel
+
+class CustomRecipeModel(QAbstractListModel):
+
+    def __init__(self, recipe_model):
+        QAbstractListModel.__init__(self)
+        self.recipe_model = recipe_model
+
+    def add(self, title, script):
+        self.recipe_model.add_custom_recipe(title, script)
+        self.reset()
 
 class OldestArticle(QWidget):
 
@@ -148,6 +159,7 @@ class OPML(object):
 
     def import_recipes(self, outlines):
         nr = 0
+        recipe_model = CustomRecipeModel(RecipeModel())
         for outline in outlines:
             src, title = self.options_to_profile(dict(
                 nr=nr,
@@ -162,10 +174,13 @@ class OPML(object):
                 add_custom_recipe(title, src)
             except Exception as err:
                 # error dialog should be placed somewhere where it can have a parent
-                # Left it here as this way failing feeds only will silently fail
+                # Left it here as this way only failing feeds will silently fail
                 error_dialog(None, _('Invalid input'),
                     _('<p>Could not create recipe. Error:<br>%s')%str(err)).exec_()
             nr+=1
+
+            recipe_model.add(title, src)
+
 
     def options_to_profile(self, recipe):
         classname = 'BasicUserRecipe'+str(recipe.get('nr'))+str(int(time.time()))
@@ -189,17 +204,6 @@ class %(classname)s(%(base_class)s):
                  max_articles=max_articles,
                  base_class='AutomaticNewsRecipe')
         return src, title
-
-    def add_profile(self, clicked):
-        if self.stacks.currentIndex() == 0:
-            src, title = self.options_to_profile()
-
-            try:
-                compile_recipe(src)
-            except Exception as err:
-                error_dialog(self, _('Invalid input'),
-                        _('<p>Could not create recipe. Error:<br>%s')%str(err)).exec_()
-                return
 
 if __name__ == '__main__':
     opml = OPML();
