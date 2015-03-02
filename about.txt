@@ -1,7 +1,7 @@
 The OMPL importer plugin
 ========================
 
-Created by Kovid Goyal
+Created by Kenny Billiau
 
 Requires calibre >= 0.7.53
 
